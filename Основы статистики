@@ -1,0 +1,33 @@
+#Основы статистики
+import pandas as pd
+import numpy as np
+from scipy import stats
+
+def website_analyse (filename):
+  df=pd.read_csv(filename)
+
+  mean=np.mean(df["Просмотренные страницы"])
+  mean=round(mean, 2)
+  print("1) Среднее количество просмотренных страниц: ", mean)
+
+  std=np.std(df["Время на сайте (сек)"])
+  std=round(std, 2)
+  print("2) Стандартное отклонение: ", std)
+
+  cv=(std/np.mean(df["Время на сайте (сек)"]))
+  if cv>0.25:
+    print("3) Высокая вариабельность: ", cv)
+  elif 0.25>cv>0.1:
+    print("3) Умеренная вариабельность: ", cv)
+  elif cv<0.1:
+    print("3) Слабая вариабельность: ", cv)
+
+  df1=df[df["Тип устройства"].isin(["Мобильное"])]
+  df2=df[df["Тип устройства"].isin(["Десктоп"])]
+  t_statistic, p_value=stats.ttest_ind(df1["Просмотренные страницы"], df2["Просмотренные страницы"])
+  if int(p_value)>0.05:
+    print("4) Есть статистически значимая разница в количестве страниц: ", p_value)
+  else:
+    print("Нет статистически значимой разницы: ", p_value)
+
+website_analyse("website_visits_december_2024.csv")
