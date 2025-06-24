@@ -1,0 +1,35 @@
+import torch
+import pandas as pd
+import transformers
+from transformers import AutoModelForSequenceClassification
+from transformers import BertTokenizerFast
+import matplotlib.pyplot as plt
+
+df=pd.read_csv("/content/cafe_reviews.csv")
+sample=pd.DataFrame
+sample=df[["normalized_text","true_sentiment"]]
+
+tokenizer = BertTokenizerFast.from_pretrained('blanchefort/rubert-base-cased-sentiment')
+model = AutoModelForSequenceClassification.from_pretrained('blanchefort/rubert-base-cased-sentiment', return_dict=True)
+
+def analyze_sentiment(text):
+  inputs = tokenizer(text, max_length=512, padding=True, truncation=True, return_tensors='pt')
+  outputs = model(**inputs)
+  predicted = torch.nn.functional.softmax(outputs.logits, dim=1)
+  predicted = torch.argmax(predicted, dim=1).numpy()
+  return predicted
+
+sample["predicted_sentiment"]=sample["normalized_text"].apply(analyze_sentiment)
+x=[0, 1, 2]
+y=sample["predicted_sentiment"].value_counts(normalize=True)
+
+def bar_chart(x, y):
+  plt.bar(x, y, color="#98FB98")
+  plt.grid(True)
+  plt.xlabel("Тональность")
+  plt.ylabel("Количество отзывов")
+  plt.title("Распределение тональности отзывов (Predicted)")
+  return plt.show()
+
+bar_chart(x, y)
+print(sample)
