@@ -1,0 +1,42 @@
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import recall_score
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+
+def table_preprocessing(file_name):
+  data=pd.read_csv(file_name)
+  data=data.drop(["Booking_ID"], axis=1)
+  labelencoder=LabelEncoder()
+  data["type_of_meal_plan"] = labelencoder.fit_transform(data["type_of_meal_plan"])
+  data["room_type_reserved"] = labelencoder.fit_transform(data["room_type_reserved"])
+  data["booking_status"] = labelencoder.fit_transform(data["booking_status"])
+  data["market_segment_type"] = labelencoder.fit_transform(data["market_segment_type"])
+  X=data.drop(["booking_status"], axis=1)
+  Y=data["booking_status"]
+  return X, Y
+
+def hotel_booking_analyze(X, Y):
+  X_train, X_test, Y_train, Y_test = train_test_split( X, Y, test_size=0.25)
+
+  svc = SVC()
+  svc.fit(X_train, Y_train)
+  y_svc_pred = svc.predict(X_test)
+  svc_recall_score=recall_score(Y_test, y_svc_pred)
+
+  dtc = DecisionTreeClassifier()
+  dtc.fit(X_train, Y_train)
+  y_dtc_pred=dtc.predict(X_test)
+  dtc_recall_score=recall_score(Y_test, y_dtc_pred)
+
+  lreg = LogisticRegression()
+  lreg.fit(X_train, Y_train)
+  y_lreg_pred=dtc.predict(X_test)
+  lreg_recall_score=recall_score(Y_test, y_lreg_pred)
+
+  return  f"Имя_классификатора_1: SVC полнота_для_классификатора_1{svc_recall_score}. Имя_классификатора_2: DecisionTreeClassifier полнота_для_классификатора_2 {dtc_recall_score}. Имя_классификатора_3: LogisticRegression полнота_для_классификатора_3{lreg_recall_score}."
+
+table_preprocessing("/content/hotel_reservations.csv")
+hotel_booking_analyze(X, Y)
